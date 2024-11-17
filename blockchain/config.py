@@ -1,27 +1,28 @@
 # config.py
 from web3 import Web3
 
-# Configuration du nœud local Ganache
-GANACHE_URL = "http://127.0.0.1:7545"
+from web3 import Web3
 
-# Adresse du contrat déployé sur la blockchain
-CONTRACT_ADDRESS = "0x75914458519eea98F9C7572411D861dC1F37e68F"
+# URL RPC de Sepolia
+SEPOLIA_URL = "https://rpc.sepolia.org"
+
+# Adresse du contrat sur Sepolia (remplacez par l'adresse obtenue après déploiement)
+CONTRACT_ADDRESS = "0x95C2e8f7eE90002CF9834033F7584B6bA3EE46AE"
 
 # Adresse du propriétaire du contrat
-OWNER_ADDRESS = "0x419A88794A719245327f323f13afa32ac2B8f621"
+OWNER_ADDRESS = "0x0217E58A04AC0BD8E33b53013B21b2F9eeCD2EB9"
 
-# Clé privée pour signer les transactions (à utiliser uniquement pour les tests)
-PRIVATE_KEY = "0x65e759351f1e21c4dd8911d3050e50060bd64f5fd136806005edf31be1fd853d"
+# Clé privée pour signer les transactions
+PRIVATE_KEY = "77efb44d9e900cf84d8cacaf634a9e010951e62416b1db83d404ffdcd652ebc9"  
 
-# Connexion au nœud Ethereum Sepolia
-SEPOLIA_URL = "https://rpc.sepolia.org"
+# Connexion au réseau Sepolia
 w3 = Web3(Web3.HTTPProvider(SEPOLIA_URL))
-
-
-CRYPTOCOMPARE_API_KEY = "162e3b64f2b558673829f4b0899f7964bfafcfe4a212130389afd08150113be7"
-
 
 # Vérification de la connexion à la blockchain
 if not w3.is_connected():
-    raise Exception("Connexion au nœud Ethereum échouée.")
-    print("Connexion à Ganache :", w3.isConnected())
+    raise Exception("Connexion au réseau Sepolia échouée.")
+print("Connecté à Sepolia :", w3.is_connected())
+
+
+
+CRYPTOCOMPARE_API_KEY = "162e3b64f2b558673829f4b0899f7964bfafcfe4a212130389afd08150113be7"

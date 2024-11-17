@@ -6,8 +6,9 @@ import requests
 from blockchain.config import CRYPTOCOMPARE_API_KEY
 import json
 
-# Connexion à Ganache
-w3 = Web3(Web3.HTTPProvider(config.GANACHE_URL))
+# Connexion à Sepolia
+w3 = Web3(Web3.HTTPProvider(config.SEPOLIA_URL))
+
 
 # Charger l'ABI
 with open("build/contracts/ProjectListing.json") as f:

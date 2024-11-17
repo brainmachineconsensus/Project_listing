@@ -1,9 +1,13 @@
 import json
 from web3 import Web3
-from blockchain.config import GANACHE_URL, CONTRACT_ADDRESS
+from blockchain.config import SEPOLIA_URL, CONTRACT_ADDRESS
 
-# Connexion à Web3
-w3 = Web3(Web3.HTTPProvider(GANACHE_URL))
+# Connexion au réseau Sepolia
+w3 = Web3(Web3.HTTPProvider(SEPOLIA_URL))
+
+# Vérifiez la connexion
+if not w3.is_connected():
+    raise ConnectionError("Impossible de se connecter au réseau Sepolia")
 
 # Charger le fichier ABI
 try:

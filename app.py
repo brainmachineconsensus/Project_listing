@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from routes.projects import projects_bp
 from routes.votes import votes_bp
-from blockchain.config import GANACHE_URL, CONTRACT_ADDRESS, OWNER_ADDRESS, PRIVATE_KEY, w3, CRYPTOCOMPARE_API_KEY
+from blockchain.config import SEPOLIA_URL, CONTRACT_ADDRESS, OWNER_ADDRESS, PRIVATE_KEY, w3, CRYPTOCOMPARE_API_KEY
 from blockchain.contract import contract
 from flask_cors import CORS
 import requests
@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration de l'application
-app.config['GANACHE_URL'] = GANACHE_URL
+app.config['SEPOLIA_URL'] = SEPOLIA_URL
 app.config['CONTRACT_ADDRESS'] = CONTRACT_ADDRESS
 app.config['OWNER_ADDRESS'] = OWNER_ADDRESS
 app.config['PRIVATE_KEY'] = PRIVATE_KEY
