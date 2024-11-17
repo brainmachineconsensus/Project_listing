@@ -6,7 +6,7 @@ from blockchain.config import SEPOLIA_URL, CONTRACT_ADDRESS
 w3 = Web3(Web3.HTTPProvider(SEPOLIA_URL))
 
 # Vérifiez la connexion
-if not w3.is_connected():
+if not w3.isConnected():
     raise ConnectionError("Impossible de se connecter au réseau Sepolia")
 
 # Charger le fichier ABI
