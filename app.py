@@ -15,6 +15,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+load_dotenv()
+# Récupérer la clé API
+CRYPTOCOMPARE_API_KEY = os.getenv("CRYPTOCOMPARE_API_KEY")
 # Configuration de l'application
 app.config['SEPOLIA_URL'] = os.getenv('SEPOLIA_URL')
 app.config['CONTRACT_ADDRESS'] = os.getenv('CONTRACT_ADDRESS')
