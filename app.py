@@ -1,20 +1,30 @@
 from flask import Flask, render_template
 from routes.projects import projects_bp
 from routes.votes import votes_bp
-from blockchain.config import SEPOLIA_URL, CONTRACT_ADDRESS, OWNER_ADDRESS, PRIVATE_KEY, w3, CRYPTOCOMPARE_API_KEY
+from blockchain.config import w3
 from blockchain.contract import contract
 from flask_cors import CORS
 import requests
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
 # Configuration de l'application
-app.config['SEPOLIA_URL'] = SEPOLIA_URL
-app.config['CONTRACT_ADDRESS'] = CONTRACT_ADDRESS
-app.config['OWNER_ADDRESS'] = OWNER_ADDRESS
-app.config['PRIVATE_KEY'] = PRIVATE_KEY
+app.config['SEPOLIA_URL'] = os.getenv('SEPOLIA_URL')
+app.config['CONTRACT_ADDRESS'] = os.getenv('CONTRACT_ADDRESS')
+app.config['OWNER_ADDRESS'] = os.getenv('OWNER_ADDRESS')
+app.config['PRIVATE_KEY'] = os.getenv('PRIVATE_KEY')
+app.config['CRYPTOCOMPARE_API_KEY'] = os.getenv('CRYPTOCOMPARE_API_KEY')
+
+# Assurez-vous que les variables d'environnement sont correctement chargées
+print(f"SEPOLIA_URL: {app.config['SEPOLIA_URL']}")
+print(f"CONTRACT_ADDRESS: {app.config['CONTRACT_ADDRESS']}")
 
 # Enregistrement des blueprints avec des préfixes uniques
 app.register_blueprint(projects_bp, url_prefix='/projects')
