@@ -141,7 +141,7 @@
                 return;
             }
 
-            const contractAddress = '0x9D09E43CA8c7c3b676a67244200Eb1A45fa1bDeA';
+            const contractAddress = '0x95C2e8f7eE90002CF9834033F7584B6bA3EE46AE';
             const abi = await fetch('/static/js/ABI.json').then(response => response.json());
             const contract = new web3.eth.Contract(abi, contractAddress);
 
