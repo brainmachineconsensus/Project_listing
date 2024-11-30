@@ -3,45 +3,71 @@ from flask import Blueprint, jsonify, request, render_template
 from models import contract, w3
 from datetime import datetime
 import time
+import os
+from dotenv import load_dotenv
+import logging
+
+load_dotenv()
+
+SEPOLIA_URL = os.getenv("SEPOLIA_URL")
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+OWNER_ADDRESS = os.getenv("OWNER_ADDRESS")
 
 projects_bp = Blueprint('projects_bp', __name__)
 
-
+logging.basicConfig(level=logging.INFO)
 
 @projects_bp.route('/add', methods=['GET', 'POST'])
 def add_project():
     if request.method == 'POST':
-        data = request.get_json()
-
-        # Vérification des données reçues
-        print("Données reçues :", data)
-
-        # Vérifier que 'deadline' est présent dans les données reçues
-        if 'deadline' not in data:
-            return jsonify({"error": "Le champ deadline est requis"}), 400
-
-        # Convertir le 'deadline' en entier et l'ajouter au temps actuel
         try:
-            deadline_seconds = int(data['deadline'])
-            current_time = int(time.time())  # Obtenir l'heure actuelle en secondes
-            deadline = current_time + deadline_seconds
-        except ValueError:
-            return jsonify({"error": "Le champ deadline doit être un nombre entier"}), 400
+            data = request.get_json()
 
-        # Vérifier si le deadline est dans le futur
-        if deadline <= current_time:
-            return jsonify({"error": "Le champ deadline doit être une date future"}), 400
+            # Vérification des données reçues
+            logging.info(f"Données reçues : {data}")
 
-        # Appel de la fonction addProject avec les arguments correctement typés
-        tx = contract.functions.addProject(data['name'], data['description'], deadline).transact({
-            'from': w3.eth.accounts[0],
-            'gas': 1000000
-        })
-        w3.eth.wait_for_transaction_receipt(tx)
+            if 'deadline' not in data:
+                return jsonify({"error": "Le champ deadline est requis"}), 400
 
-        return jsonify({"message": "Projet ajouté avec succès"}), 201
+            try:
+                deadline_seconds = int(data['deadline'])
+                current_time = int(time.time())
+                deadline = current_time + deadline_seconds
+            except ValueError:
+                return jsonify({"error": "Le champ deadline doit être un nombre entier"}), 400
 
-    # Si la méthode est GET, afficher le formulaire
+            if deadline <= current_time:
+                return jsonify({"error": "Le champ deadline doit être une date future"}), 400
+
+            logging.info("Construction de la transaction...")
+
+            transaction = contract.functions.addProject(
+                data['name'], data['description'], deadline
+            ).build_transaction({
+                'from': OWNER_ADDRESS,
+                'nonce': w3.eth.get_transaction_count(OWNER_ADDRESS),
+                'gas': 1000000,
+                'gasPrice': w3.to_wei('10', 'gwei')
+            })
+
+            logging.info(f"Transaction construite : {transaction}")
+
+            signed_tx = w3.eth.account.sign_transaction(transaction, PRIVATE_KEY)
+
+            logging.info(f"signed_tx contenu : {signed_tx}")
+
+
+            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+
+            logging.info(f"Transaction envoyée avec succès : {tx_hash.hex()}")
+
+            return jsonify({"message": "Projet ajouté avec succès", "tx_hash": tx_hash.hex()}), 201
+
+        except Exception as e:
+            logging.error(f"Erreur lors du traitement : {str(e)}", exc_info=True)
+            return jsonify({"error": f"Erreur interne : {str(e)}"}), 500
+
     return render_template('add_project.html')
 
 
@@ -58,6 +84,7 @@ def list_projects():
             "totalTokensSold": project[3],
             "votes": project[4],
             "isActive": project[5],
-            "deadline": project[6]
+            "deadline": datetime.utcfromtimestamp(project[6]).strftime('%Y-%m-%d %H:%M:%S')  # Format lisible
         })
     return render_template('projects_list.html', projects=projects)
+

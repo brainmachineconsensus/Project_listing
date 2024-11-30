@@ -7,6 +7,7 @@ votes_bp = Blueprint('votes_bp', __name__)
 @votes_bp.route('/vote', methods=['GET', 'POST'])
 def vote():
     print("Route /votes/vote appelée")
+    
     if request.method == 'POST':
         print("Requête POST reçue")
         data = request.get_json()
@@ -22,17 +23,19 @@ def vote():
         try:
             # Appel à la fonction vote du contrat
             print(f"Appel à la fonction vote du contrat avec project_id={project_id} et amount={amount}")
-            tx = contract.functions.vote(project_id, amount).transact({
+            tx_hash = contract.functions.vote(project_id, amount).transact({
                 'from': w3.eth.accounts[0],
+                'value': w3.to_wei(amount, 'ether'),
                 'gas': 1000000
             })
-            receipt = w3.eth.wait_for_transaction_receipt(tx)
-            print("Transaction receipt:", receipt)
-            
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+            print("Transaction réussie, hash:", tx_hash.hex())
+
             # Récupérer la liste mise à jour des projets
             print("Récupération des projets mis à jour")
             next_project_id = contract.functions.nextProjectId().call()
             projects = []
+
             for i in range(next_project_id):
                 project = contract.functions.projects(i).call()
                 projects.append({
@@ -44,6 +47,7 @@ def vote():
                     "isActive": project[5],
                     "deadline": project[6]
                 })
+                print(f"Projet récupéré après vote: {project}")
 
             # Trier les projets par nombre de votes (décroissant)
             projects = sorted(projects, key=lambda x: x["votes"], reverse=True)
@@ -51,22 +55,26 @@ def vote():
 
             return jsonify({"message": "Vote enregistré avec succès", "projects": projects}), 200
 
+        except ValueError as ve:
+            print("Erreur liée aux valeurs:", ve)
+            return jsonify({"error": "Données invalides fournies"}), 400
         except Exception as e:
-            # Gérer des erreurs spécifiques
             error_message = str(e)
+            print("Erreur lors de la transaction:", e)
+
             if "Voting has ended" in error_message:
                 return jsonify({"error": "Le vote est terminé pour ce projet"}), 400
             elif "insufficient funds" in error_message:
                 return jsonify({"error": "Fonds insuffisants pour effectuer ce vote"}), 400
             else:
-                print("Erreur lors de l'exécution de la transaction:", e)
                 return jsonify({"error": "Erreur lors de la transaction"}), 500
 
-    # GET: affichage du formulaire de vote
+    # Gestion des requêtes GET
     print("Requête GET pour /votes/vote")
     try:
         next_project_id = contract.functions.nextProjectId().call()
         projects = []
+
         for i in range(next_project_id):
             project = contract.functions.projects(i).call()
             projects.append({
@@ -81,8 +89,10 @@ def vote():
 
         # Trier les projets par nombre de votes (décroissant)
         projects = sorted(projects, key=lambda x: x["votes"], reverse=True)
-        print("Projets pour le formulaire de vote:", projects)
+        print("Projets récupérés pour affichage:", projects)
+
         return render_template('vote.html', projects=projects)
+
     except Exception as e:
         print("Erreur lors de la récupération des projets:", e)
         return render_template('vote.html', projects=[]), 500
