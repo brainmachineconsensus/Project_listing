@@ -85,7 +85,7 @@
                     to: contract.options.address, 
                     from: userAddress,
                     data: contract.methods.vote(projectId, amount).encodeABI(),
-                    gas: '0xF4240', // Gas en format hexadécimal (1000000 en décimal)
+                    gas: 4000000, // Gas en format hexadécimal (1000000 en décimal)
                 };
 
                 console.log("Transaction parameters:", transactionParameters);
