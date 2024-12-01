@@ -26,7 +26,7 @@ def vote():
             tx_hash = contract.functions.vote(project_id, amount).transact({
                 'from': w3.eth.accounts[0],
                 'value': w3.to_wei(amount, 'ether'),
-                'gas': 1000000
+                'gas': 4000000
             })
             receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
             print("Transaction réussie, hash:", tx_hash.hex())
@@ -156,7 +156,7 @@ def refund():
                 # Appel à la fonction refund du contrat
                 tx = contract.functions.refund(project_id).transact({
                     'from': w3.eth.accounts[0],
-                    'gas': 1000000
+                    'gas': 4000000
                 })
                 w3.eth.wait_for_transaction_receipt(tx)
 
