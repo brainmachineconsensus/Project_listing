@@ -56,28 +56,27 @@ def add_project():
                 data['name'], data['description'], deadline
             ).build_transaction({
                 'from': OWNER_ADDRESS,
-                'nonce': w3.eth.get_transaction_count(OWNER_ADDRESS),
-                'gas': gas_estimate + 10000,  # Ajout d'une marge de sécurité
-                'gasPrice': w3.to_wei('5', 'gwei')  # Réduction du prix du gaz
+                'nonce': w3.eth.get_transaction_count(OWNER_ADDRESS, 'pending'),
+                'gas': 1000000,
+                'gasPrice': w3.to_wei('15', 'gwei')  # Ajuster selon les conditions du réseau
             })
 
-            logging.info(f"Transaction construite : {transaction}")
-
-            # Signature et envoi de la transaction
             signed_tx = w3.eth.account.sign_transaction(transaction, PRIVATE_KEY)
-            logging.info(f"signed_tx contenu : {signed_tx}")
-
             tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-
             logging.info(f"Transaction envoyée avec succès : {tx_hash.hex()}")
+
+            # Augmentation du délai d'attente à 300 secondes
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=300)
+            logging.info(f"Transaction confirmée : {receipt}")
 
             return jsonify({"message": "Projet ajouté avec succès", "tx_hash": tx_hash.hex()}), 201
 
+        except web3.exceptions.TimeExhausted:
+            logging.error("La transaction n'a pas été confirmée dans le délai imparti. Réessayez avec un gasPrice plus élevé.")
+            return jsonify({"error": "Transaction non confirmée dans le délai imparti."}), 500
         except Exception as e:
             logging.error(f"Erreur lors du traitement : {str(e)}", exc_info=True)
             return jsonify({"error": f"Erreur interne : {str(e)}"}), 500
-
     return render_template('add_project.html')
 
 
