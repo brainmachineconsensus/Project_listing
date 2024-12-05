@@ -39,23 +39,33 @@ def add_project():
             if deadline <= current_time:
                 return jsonify({"error": "Le champ deadline doit être une date future"}), 400
 
-            logging.info("Construction de la transaction...")
+            logging.info("Estimation du gaz requis pour la transaction...")
 
+            # Estimation dynamique de la limite de gaz
+            try:
+                gas_estimate = contract.functions.addProject(
+                    data['name'], data['description'], deadline
+                ).estimate_gas({'from': OWNER_ADDRESS})
+                logging.info(f"Estimation du gaz : {gas_estimate}")
+            except Exception as e:
+                logging.error(f"Erreur lors de l'estimation du gaz : {str(e)}", exc_info=True)
+                return jsonify({"error": "Impossible d'estimer le gaz"}), 500
+
+            # Construction de la transaction avec des paramètres ajustés
             transaction = contract.functions.addProject(
                 data['name'], data['description'], deadline
             ).build_transaction({
                 'from': OWNER_ADDRESS,
                 'nonce': w3.eth.get_transaction_count(OWNER_ADDRESS),
-                'gas': 1000000,
-                'gasPrice': w3.to_wei('10', 'gwei')
+                'gas': gas_estimate + 10000,  # Ajout d'une marge de sécurité
+                'gasPrice': w3.to_wei('5', 'gwei')  # Réduction du prix du gaz
             })
 
             logging.info(f"Transaction construite : {transaction}")
 
+            # Signature et envoi de la transaction
             signed_tx = w3.eth.account.sign_transaction(transaction, PRIVATE_KEY)
-
             logging.info(f"signed_tx contenu : {signed_tx}")
-
 
             tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
             receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
